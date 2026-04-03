@@ -50,19 +50,30 @@ from os.path import (
     expanduser as os_path_expanduser
 )
 
-from subprocess import (
-    Popen                as subprocess_Popen,
-    STARTUPINFO          as subprocess_STARTUPINFO,
-    STARTF_USESHOWWINDOW as subprocess_STARTF_USESHOWWINDOW
-)
+import sys as _sys_import_tmp
+from subprocess import Popen as subprocess_Popen
+if _sys_import_tmp.platform == "win32":
+    from subprocess import (
+        STARTUPINFO          as subprocess_STARTUPINFO,
+        STARTF_USESHOWWINDOW as subprocess_STARTF_USESHOWWINDOW
+    )
+else:
+    subprocess_STARTUPINFO          = None
+    subprocess_STARTF_USESHOWWINDOW = None
+del _sys_import_tmp
 
 # Third-party library imports
 from natsort import natsorted
+import sys as _sys_import_tmp2
 from psutil import (
-    Process             as psutil_Process,
-    IDLE_PRIORITY_CLASS as psutil_IDLE_PRIORITY_CLASS,
-    virtual_memory      as psutil_virtual_memory,
+    Process        as psutil_Process,
+    virtual_memory as psutil_virtual_memory,
 )
+if _sys_import_tmp2.platform == "win32":
+    from psutil import IDLE_PRIORITY_CLASS as psutil_IDLE_PRIORITY_CLASS
+else:
+    psutil_IDLE_PRIORITY_CLASS = 19  # nice value 19 = lowest CPU priority on Linux
+del _sys_import_tmp2
 from onnxruntime import (
     InferenceSession        as onnxruntime_InferenceSession,
     SessionOptions          as onnxruntime_SessionOptions,
@@ -202,8 +213,12 @@ video_codec_list = [
 OUTPUT_PATH_CODED    = "Same path as input files"
 DOCUMENT_PATH        = os_path_join(os_path_expanduser('~'), 'Documents')
 USER_PREFERENCE_PATH = find_by_relative_path(f"{DOCUMENT_PATH}{os_separator}{app_name}_{version}_userpreference.json")
-FFMPEG_EXE_PATH      = find_by_relative_path(f"Assets{os_separator}ffmpeg.exe")
-EXIFTOOL_EXE_PATH    = find_by_relative_path(f"Assets{os_separator}exiftool.exe")
+if sys.platform == "win32":
+    FFMPEG_EXE_PATH   = find_by_relative_path(f"Assets{os_separator}ffmpeg.exe")
+    EXIFTOOL_EXE_PATH = find_by_relative_path(f"Assets{os_separator}exiftool.exe")
+else:
+    FFMPEG_EXE_PATH   = "ffmpeg"
+    EXIFTOOL_EXE_PATH = "exiftool"
 
 COMPLETED_STATUS = "Completed"
 ERROR_STATUS     = "Error"
@@ -2138,7 +2153,12 @@ def upscale_video(
         ffmpeg_process = None
         try:
             ffmpeg_process = subprocess_Popen(extraction_command, startupinfo = startupinfo)
-            try: psutil_Process(ffmpeg_process.pid).nice(psutil_IDLE_PRIORITY_CLASS)
+            try:
+                proc = psutil_Process(ffmpeg_process.pid)
+                if sys.platform == "win32":
+                    proc.nice(psutil_IDLE_PRIORITY_CLASS)
+                else:
+                    proc.nice(19)
             except Exception: pass
             while ffmpeg_process.poll() is None:
                 if event_stop_upscale_process.is_set():
