@@ -3335,7 +3335,12 @@ class App():
         window.title(f"{self._get_AI_engine_info()}")
         window.geometry("1000x675")
         window.resizable(False, False)
-        window.iconbitmap(find_by_relative_path("Assets" + os_separator + "logo.ico"))
+        if sys.platform == "win32":
+            window.iconbitmap(find_by_relative_path("Assets" + os_separator + "logo.ico"))
+        else:
+            from tkinter import PhotoImage as tkinter_PhotoImage
+            icon = tkinter_PhotoImage(file = find_by_relative_path("Assets" + os_separator + "logo.png"))
+            window.iconphoto(True, icon)
 
         place_loadFile_section()
 
