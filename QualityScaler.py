@@ -310,23 +310,25 @@ class AI_upscale:
 
     def _load_inferenceSession(self) -> onnxruntime_InferenceSession:
 
-        providers = ['DmlExecutionProvider']
-
         match self.selected_gpu:
-            case 'Auto':  provider_options = [{"performance_preference": "high_performance"}]
-            case 'GPU 1': provider_options = [{"device_id": "0"}]
-            case 'GPU 2': provider_options = [{"device_id": "1"}]
-            case 'GPU 3': provider_options = [{"device_id": "2"}]
-            case 'GPU 4': provider_options = [{"device_id": "3"}]
+            case 'Auto':  device_id = 0
+            case 'GPU 1': device_id = 0
+            case 'GPU 2': device_id = 1
+            case 'GPU 3': device_id = 2
+            case 'GPU 4': device_id = 3
+
+        providers = [
+            ('CUDAExecutionProvider', {'device_id': device_id}),
+            'CPUExecutionProvider',
+        ]
 
         sess_options = onnxruntime_SessionOptions()
         sess_options.enable_profiling = False
 
         inference_session = onnxruntime_InferenceSession(
-            path_or_bytes    = self.selected_AI_model_path, 
+            path_or_bytes    = self.selected_AI_model_path,
             sess_options     = sess_options,
             providers        = providers,
-            provider_options = provider_options,
         )
 
         return inference_session
@@ -3361,8 +3363,11 @@ class App():
     def _get_AI_engine_info(self) -> str:
         try:
             AI_engine_v  = onnxruntime_get_version_string()
-            is_directml  = any("Dml" in p or "DirectML" in p for p in onnxruntime_get_available_providers())
-            AI_providers = "DirectML" if is_directml else "CPU"
+            available    = onnxruntime_get_available_providers()
+            if "CUDAExecutionProvider" in available:
+                AI_providers = "CUDA"
+            else:
+                AI_providers = "CPU"
             return f"AI engine {AI_engine_v} + {AI_providers}"
         except:
             return ""

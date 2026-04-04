@@ -90,3 +90,17 @@ The bundled app will be output to `dist/QualityScaler/`.
 - The `AI-onnx/` models are bundled into the build at step 6 — make sure all desired model files are present before building.
 - `build/` and `dist/` are gitignored and safe to delete between builds.
 - To rebuild cleanly: `rm -rf build/ dist/` then re-run `pyinstaller QualityScaler.spec`.
+
+## GPU Acceleration (CUDA)
+
+The app uses `onnxruntime-gpu` and will automatically use CUDA if available, otherwise falling back to CPU.
+
+`onnxruntime-gpu` requires **CUDA 12** and **cuDNN 9**. If your system has a different CUDA version, check whether the installed version of `onnxruntime-gpu` supports it before installing cuDNN:
+
+```bash
+pip index versions onnxruntime-gpu
+```
+
+Installing `libcudnn9-cuda-12` alongside a newer CUDA version (e.g. CUDA 13) risks library path conflicts. Safer alternatives:
+- Use a conda environment or NVIDIA NGC container that ships CUDA 12 + cuDNN 9 pre-configured, leaving your system CUDA install untouched.
+- Or run without GPU acceleration — the app falls back to CPU cleanly with no other issues.

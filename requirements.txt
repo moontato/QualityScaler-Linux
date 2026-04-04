@@ -1,5 +1,5 @@
 #AI
-onnxruntime
+onnxruntime-gpu
 numpy
 
 #GUI
