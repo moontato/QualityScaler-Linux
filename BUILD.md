@@ -48,7 +48,30 @@ AI-onnx/
   RealESRGANx4_fp16.onnx
 ```
 
-### 5. Build
+### 5. Generate the .spec file
+
+The `.spec` file is gitignored and must be generated before building. Run:
+
+```bash
+pyi-makespec \
+  --name QualityScaler \
+  --noconsole \
+  --icon Assets/logo.png \
+  --add-data "Assets:Assets" \
+  --add-data "AI-onnx:AI-onnx" \
+  --hidden-import customtkinter \
+  --hidden-import PIL \
+  --hidden-import PIL._tkinter_finder \
+  --hidden-import cv2 \
+  --hidden-import onnxruntime \
+  --hidden-import psutil \
+  --hidden-import natsort \
+  QualityScaler.py
+```
+
+`PIL._tkinter_finder` must be explicitly included — PyInstaller does not auto-detect it, and the app will crash on launch without it.
+
+### 6. Build
 
 ```bash
 pyinstaller QualityScaler.spec
@@ -56,7 +79,7 @@ pyinstaller QualityScaler.spec
 
 The bundled app will be output to `dist/QualityScaler/`.
 
-### 6. Run the built app
+### 7. Run the built app
 
 ```bash
 ./dist/QualityScaler/QualityScaler
@@ -64,6 +87,6 @@ The bundled app will be output to `dist/QualityScaler/`.
 
 ## Notes
 
-- The `AI-onnx/` models are bundled into the build at step 5 — make sure all desired model files are present before building.
+- The `AI-onnx/` models are bundled into the build at step 6 — make sure all desired model files are present before building.
 - `build/` and `dist/` are gitignored and safe to delete between builds.
 - To rebuild cleanly: `rm -rf build/ dist/` then re-run `pyinstaller QualityScaler.spec`.

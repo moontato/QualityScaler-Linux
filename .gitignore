@@ -1,5 +1,5 @@
 .venv/
 build/
 dist/
-QualityScaler.spec
 *.onnx
+QualityScaler.spec
