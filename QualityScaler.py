@@ -2391,7 +2391,7 @@ def upscale_video(
                     "-b:v",        "50000k",
                     str(video_upscale_task.video_output_path)
                 ]
-                subprocess_run(encoding_command, check = True, shell = "False")
+                subprocess_run(encoding_command, check = True)
                 delete_file(video_upscale_task.ffmpeg_txt_file_path)
                 print(f"[FFMPEG] encoding completed with ({current_codec})")
                 break
